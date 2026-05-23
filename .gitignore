@@ -19,9 +19,9 @@ client-data/
 *.log
 logs/
 
-# Documentos académicos individuales (no se publican en el repo)
+# Documentos académicos (no se publican en el repo)
 docs/PRE-INFORME.md
 docs/PRE-INFORME.docx
-docs/INFORME.md
-docs/INFORME.docx
+docs/INFORME-GRUPAL.md
+docs/INFORME-GRUPAL.docx
 docs/autoevaluacion.md
