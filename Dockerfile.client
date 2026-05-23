@@ -1,0 +1,22 @@
+# Client image — builds the shaded CLI JAR and provides a `dfs` entrypoint.
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /workspace
+COPY pom.xml ./
+COPY common/pom.xml common/pom.xml
+COPY namenode/pom.xml namenode/pom.xml
+COPY datanode/pom.xml datanode/pom.xml
+COPY client/pom.xml client/pom.xml
+RUN mvn -B -q -e -ntp -pl client -am dependency:go-offline || true
+COPY common/src common/src
+COPY client/src client/src
+COPY namenode/src namenode/src
+COPY datanode/src datanode/src
+RUN mvn -B -q -e -ntp -pl client -am -DskipTests package
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=build /workspace/client/target/dfs-client.jar /app/dfs-client.jar
+ENV DFS_NAMENODE_URL="http://namenode:8080"
+ENV DFS_HOME=/app/state
+RUN mkdir -p /app/state
+ENTRYPOINT ["java","-jar","/app/dfs-client.jar"]

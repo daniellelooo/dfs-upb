@@ -1,0 +1,27 @@
+target/
+**/target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Docker volumes / runtime state
+client-state/
+client-data/
+
+# Local env
+.env
+
+# Maven wrapper if present
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# Documentos académicos individuales (no se publican en el repo)
+docs/PRE-INFORME.md
+docs/PRE-INFORME.docx
+docs/INFORME.md
+docs/INFORME.docx
+docs/autoevaluacion.md

@@ -1,0 +1,10 @@
+**/target/
+**/.idea/
+**/.vscode/
+.git/
+.gitignore
+client-state/
+client-data/
+docs/
+README.md
+*.md

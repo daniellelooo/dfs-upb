@@ -1,0 +1,145 @@
+name: dfs-upb
+
+services:
+
+  namenode:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: namenode
+    image: dfs/namenode:1.0.0
+    container_name: dfs-namenode
+    environment:
+      SERVER_PORT: 8080
+      DATA_DIR: /var/dfs/data
+      JWT_SECRET: ${JWT_SECRET:-please-change-this-secret-please-change-this-secret}
+      BLOCK_SIZE_MB: ${BLOCK_SIZE_MB:-64}
+      REPLICATION_FACTOR: ${REPLICATION_FACTOR:-2}
+    ports:
+      - "${NAMENODE_PORT:-8080}:8080"
+    volumes:
+      - namenode-data:/var/dfs/data
+    networks:
+      - dfs-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  datanode-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: datanode
+    image: dfs/datanode:1.0.0
+    container_name: dfs-datanode-1
+    environment:
+      SERVER_PORT: 8081
+      DATANODE_ID: datanode-1
+      DATANODE_HOST: datanode-1
+      BLOCKS_DIR: /var/dfs/blocks
+      NAMENODE_URL: http://namenode:8080
+      JWT_SECRET: ${JWT_SECRET:-please-change-this-secret-please-change-this-secret}
+    ports:
+      - "${DATANODE1_PORT:-8081}:8081"
+    volumes:
+      - datanode1-blocks:/var/dfs/blocks
+    networks:
+      - dfs-net
+    depends_on:
+      namenode:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+
+  datanode-2:
+    image: dfs/datanode:1.0.0
+    container_name: dfs-datanode-2
+    environment:
+      SERVER_PORT: 8082
+      DATANODE_ID: datanode-2
+      DATANODE_HOST: datanode-2
+      BLOCKS_DIR: /var/dfs/blocks
+      NAMENODE_URL: http://namenode:8080
+      JWT_SECRET: ${JWT_SECRET:-please-change-this-secret-please-change-this-secret}
+    ports:
+      - "${DATANODE2_PORT:-8082}:8082"
+    volumes:
+      - datanode2-blocks:/var/dfs/blocks
+    networks:
+      - dfs-net
+    depends_on:
+      namenode:
+        condition: service_healthy
+      datanode-1:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8082/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+
+  datanode-3:
+    image: dfs/datanode:1.0.0
+    container_name: dfs-datanode-3
+    environment:
+      SERVER_PORT: 8083
+      DATANODE_ID: datanode-3
+      DATANODE_HOST: datanode-3
+      BLOCKS_DIR: /var/dfs/blocks
+      NAMENODE_URL: http://namenode:8080
+      JWT_SECRET: ${JWT_SECRET:-please-change-this-secret-please-change-this-secret}
+    ports:
+      - "${DATANODE3_PORT:-8083}:8083"
+    volumes:
+      - datanode3-blocks:/var/dfs/blocks
+    networks:
+      - dfs-net
+    depends_on:
+      namenode:
+        condition: service_healthy
+      datanode-1:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8083/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    image: dfs/client:1.0.0
+    container_name: dfs-client
+    environment:
+      DFS_NAMENODE_URL: http://namenode:8080
+    volumes:
+      - ./client-state:/app/state
+      - ./client-data:/data
+    networks:
+      - dfs-net
+    profiles:
+      - tools
+    entrypoint: ["java","-jar","/app/dfs-client.jar"]
+    command: ["--help"]
+
+networks:
+  dfs-net:
+    driver: bridge
+
+volumes:
+  namenode-data:
+  datanode1-blocks:
+  datanode2-blocks:
+  datanode3-blocks:

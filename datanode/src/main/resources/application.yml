@@ -1,0 +1,34 @@
+server:
+  port: ${SERVER_PORT:8081}
+  tomcat:
+    max-swallow-size: -1
+    max-http-form-post-size: -1
+spring:
+  application:
+    name: datanode
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 1024MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+dfs:
+  datanode-id: ${DATANODE_ID:datanode-1}
+  datanode-host: ${DATANODE_HOST:datanode-1}
+  datanode-port: ${SERVER_PORT:8081}
+  blocks-dir: ${BLOCKS_DIR:/var/dfs/blocks}
+  capacity-mb: ${DATANODE_CAPACITY_MB:10240}
+  namenode-url: ${NAMENODE_URL:http://namenode:8080}
+  jwt-secret: ${JWT_SECRET:please-change-this-secret-please-change-this-secret}
+  heartbeat-interval-seconds: ${HEARTBEAT_INTERVAL_SECONDS:3}
+  blockreport-interval-seconds: ${BLOCKREPORT_INTERVAL_SECONDS:60}
+
+logging:
+  level:
+    root: INFO
+    com.upb.dfs: INFO
